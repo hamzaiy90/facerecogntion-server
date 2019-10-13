@@ -60,21 +60,16 @@ app.get('/profile/:id', (req, res) => {
     _id: new ObjectID(id)
   }, (err, data) => {
     if (err) {
-      console.log('Error', err);
     } else if (data !== null) {
-      console.log('checking', data);
       res.json(data);
     } else {
-      console.log(data);
       res.json('User not found');
     }
   });
 });
 
 app.post('/signin', (req, res) => {
-  console.log(req.body);
   let password = req.body.password;
-  console.log(password);
   User.findOne({
     email: req.body.email
   })
@@ -82,9 +77,9 @@ app.post('/signin', (req, res) => {
       if (response !== null) {
         bcrypt.compare(password, response.password, (err, data) => {
           if (data) {
-            res.json('success')
+            res.json(response)
           } else {
-            res.json('Password was wrong')
+            res.json('Failed')
           }
         })
       } else {
@@ -105,7 +100,7 @@ app.post('/register', (req, res) => {
       entries
   });
   user.save();
-  res.json('Success')
+  res.json(user)
 });
 
 app.put('/image/:id', (req, res) => {
@@ -119,7 +114,13 @@ app.put('/image/:id', (req, res) => {
   })
     .then(response => {
       if (response.n !== 0) {
-        res.json('Successfully updated the entry of the user');
+        User.findOne({
+          _id: new ObjectID(id)
+        })
+          .then(response => {
+            res.json(response.entries);
+          })
+          .catch((err) => res.json(err));
       } else {
         res.json('Could not find the user');
       }
